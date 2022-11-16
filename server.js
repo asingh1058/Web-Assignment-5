@@ -3,6 +3,32 @@ var app = express();
 var path = require("path");
 const bodyParser = require("body-parser");
 const handlebars = require("express-handlebars");
+const mongoose = require("mongoose");
+const registration = mongoose.createConnection("mongodb+srv://adarsh:mtPj3cjI0Hj4jndd@senecaweb.ujaugow.mongodb.net/?retryWrites=true&w=majority");
+const blog = mongoose.createConnection("mongodb+srv://adarsh:mtPj3cjI0Hj4jndd@senecaweb.ujaugow.mongodb.net/?retryWrites=true&w=majority");
+const article= mongoose.createConnection("mongodb+srv://adarsh:mtPj3cjI0Hj4jndd@senecaweb.ujaugow.mongodb.net/?retryWrites=true&w=majority");
+
+const users_schema = new mongoose.Schema({
+    "fName": String,
+    "lName": String,
+    "email": { "type": String, "unique": true},
+    "username": { "type": String, "unique": true},
+    "password": String,
+    "dob": String,
+    "phoneD": String,
+});
+
+const blog_schema = new mongoose.Schema({
+    "blog_name": String
+});
+
+const article_schema = new mongoose.Schema({
+    "article_name": String
+});
+
+const user_info = registration.model("registration", users_schema);
+const blog_content = blog.model("blog", blog_schema);
+const article_content = article.model("article", article_schema);
 
 var HTTP_PORT = process.env.PORT || 8080;
 
@@ -29,6 +55,7 @@ app.post("/registration", function(req, res){
     var regData = {
         fname: req.body.firstName,
         lname: req.body.lastName,
+        email: req.body.email,
         username: req.body.username,
         password: req.body.password,
         dob : req.body.dob,
@@ -71,7 +98,26 @@ app.post("/registration", function(req, res){
     {
         res.render("login", {layout: false});
     }
-});
+    let accoutInfo = new user_info({      
+        fName: regData.fname,
+        lName: regData.lname,
+        email: regData.email,
+        username: regData.username,
+        password: regData.password,
+        dob: regData.dob,
+        phone: regData.phone
+        }).save((e, data) =>{
+            if(e)
+            {
+            console.log(e);
+            }
+            else
+            {
+            console.log(data);
+            }
+        });
+});         
+
 
 
 app.get('/login', function(req, res){
@@ -94,7 +140,6 @@ app.post("/login", function(req, res){
   {
       var loginError = "The username and the password should be entered!!!";
       res.render("login", { loginError: loginError, layout: false});
-      //return;
   }
   else if(specialChar(loginData.user) == true) //if there's special character return true
   {
@@ -102,10 +147,18 @@ app.post("/login", function(req, res){
       res.render("login", { otherError: otherError, layout: false});
   }
   else
-  {
-      res.render("dashboard", {layout: false});
-  }
+    {
+        user_info.findOne({username: loginData.user, password:loginData.pass}, ["fName", "lName", "username"]).exec().then((data) =>{
+            if(data) 
+            {
+             res.render("login_dashboard", {fName:data.fName, lName:data.lName, username:data.username, layout: false});
+            }
+            else
+            {
+             var userError = "Sorry, you entered the wrong username and/or password";
+             res.render("login", {userError: userError, data: loginData, layout: false});
+            }
+         });
+    }
 });
-  
-
 app.listen(HTTP_PORT);
