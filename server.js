@@ -40,11 +40,11 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 
 app.get("/", function (req, res) {
-    res.sendFile(path.join(__dirname, "blog.html"));
+    res.render("blog", {layout:false});
   });
 
 app.get("/article", function (req, res) {
-   res.sendFile(path.join(__dirname, "article.html"));
+   res.render("article", {layout: false});
   });
 
 app.get("/registration", function(req, res) {
