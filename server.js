@@ -20,7 +20,7 @@ const users_schema = new mongoose.Schema({
 
 const blog_schema = new mongoose.Schema({
     "blog_name": String
-});
+}); 
 
 const article_schema = new mongoose.Schema({
     "article_name": String
@@ -96,9 +96,7 @@ app.post("/registration", function(req, res){
     }
     else
     {
-        res.render("dashboard", {layout: false});
-    }
-    let accoutInfo = new user_info({      
+        let accoutInfo = new user_info({      
         fName: regData.fname,
         lName: regData.lname,
         email: regData.email,
@@ -116,6 +114,8 @@ app.post("/registration", function(req, res){
             console.log(data);
             }
         });
+        res.render("dashboard", {layout: false});
+}
 });         
 
 
