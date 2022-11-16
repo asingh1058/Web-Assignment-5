@@ -96,7 +96,7 @@ app.post("/registration", function(req, res){
     }
     else
     {
-        res.render("login", {layout: false});
+        res.render("dashboard", {layout: false});
     }
     let accoutInfo = new user_info({      
         fName: regData.fname,
