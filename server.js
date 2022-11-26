@@ -19,8 +19,12 @@ const users_schema = new mongoose.Schema({
 });
 
 const blog_schema = new mongoose.Schema({
-    "blog_name": String
-}); 
+    "title": String,
+    "date": String,
+    "content": String,
+    "image" : String
+});
+
 
 const article_schema = new mongoose.Schema({
     "article_name": String
@@ -39,13 +43,50 @@ app.set('view engine', '.hbs');
 app.use(bodyParser.urlencoded({extended: true}));
 
 
-app.get("/", function (req, res) {
-    res.render("blog", {layout:false});
-  });
-
+app.get("/", function(req, res) {
+    blog_content.find().exec().then((data) =>{
+        let blogData = new Array;
+        data.forEach(element => {
+            blogData.push({
+                title: element.title,
+                date: element.date,
+                content: element.content,
+                image: element.image
+            });
+        });
+        res.render("blog", { admData: blogData, layout: false});
+    });
+});
 app.get("/article", function (req, res) {
    res.render("article", {layout: false});
   });
+
+app.post("/article", function(req, res) {
+    blog_content.findOne({ title: req.body.title }).exec().then((data) =>{
+        if(data) 
+        {
+         res.render("article", {id:data.updateID, title:data.title, content:data.content, date:data.date, image:data.image, layout: false});
+        }
+        else
+        {
+         res.render("blog", {errors: "not able to bring article",layout: false});
+        }
+     });
+});
+
+app.post("/update_article", function(req, res){
+    blog_content.updateOne({
+        updateID : req.body.UpdateID
+    },
+    {$set: {
+        title: req.body.title,
+        date : req.body.date,
+        content: req.body.content,
+        image : req.body.image
+     }}).exec();
+
+    res.redirect("/")
+});
 
 app.get("/registration", function(req, res) {
     res.render("registration", {layout: false});
@@ -161,4 +202,37 @@ app.post("/login", function(req, res){
          });
     }
 });
+app.get("/administration", function(req, res){
+
+    res.render("administration", {layout:false});
+
+});
+
+app.post("/administration", function(req, res){
+
+    let blogInfo = new blog_content({
+        title: req.body.title,
+        date : req.body.date,
+        content: req.body.content,
+        image : req.body.image
+    }).save((e, data) =>{
+        if(e)
+        {
+            console.log(e);
+        }
+        else
+        {
+            console.log(data);
+        }
+    });
+
+    res.redirect("/");
+});
+
+
+
+app.use(function(req,res){
+    res.status(404).send("Page not found");
+});
+
 app.listen(HTTP_PORT);
